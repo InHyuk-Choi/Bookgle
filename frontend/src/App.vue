@@ -49,29 +49,25 @@
 import { computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
+import axios from 'axios'
+import Swal from 'sweetalert2'
+
 
 
 const router = useRouter()
 const auth = useAuthStore()
-auth.initAuth()
 
+// ✅ 반응형 로그인 상태
+const isLoggedIn = computed(() => auth.isAuthenticated)
 
-const isLoggedIn = computed(() => {
-  return !!localStorage.getItem('access')
-})
-
-// 로그인 상태일 때 유저 상태 불러오기
 onMounted(() => {
-  if (isLoggedIn.value) {
-    auth.initAuth()
-    auth.fetchUserStatus()
-  }
+  auth.initAuth()
+  auth.fetchUserStatus()
 })
 
+// ✅ auth의 logout 사용
 const logout = () => {
-  localStorage.removeItem('access')
-  localStorage.removeItem('refresh')
-  router.push({ name: 'signin' })
+  auth.logout(Swal, router)
 }
 </script>
 

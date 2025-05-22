@@ -9,6 +9,8 @@ export const useAuthStore = defineStore('auth', () => {
   const nickname = ref('')
   const readPages = ref(0)
   const totalPoints = ref(0)
+  const isAuthenticated = ref(false)
+
 
   // 토큰 저장 및 헤더 설정
   const setAuthToken = (accessToken) => {
@@ -20,25 +22,33 @@ export const useAuthStore = defineStore('auth', () => {
     const token = localStorage.getItem('access')
     if (token) {
       axios.defaults.headers.common['Authorization'] = `Bearer ${token}`
+      isAuthenticated.value = true  // ✅ 앱 재시작 시 로그인 상태 복원
     }
-  } 
-
+  }
 
   // 사용자 정보 로드
   const fetchUserStatus = async () => {
-    try {
-      const res = await axios.get('http://localhost:8000/api/v1/accounts/me/', {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('access')}`,
-        }
-      })
-      console.log(res.data)
-      totalPoints.value = res.data.total_points
-      readPages.value = res.data.read_pages
-    } catch (err) {
-      console.error('사용자 정보 조회 실패:', err)
+  const token = localStorage.getItem('access')
+  if (!token) return  // ❗ 토큰 없으면 요청도 하지 않음
+
+  try {
+    const res = await axios.get('http://localhost:8000/api/v1/accounts/me/', {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      }
+    })
+    username.value = res.data.username
+    nickname.value = res.data.nickname 
+    totalPoints.value = res.data.total_points
+    readPages.value = res.data.read_pages
+    isAuthenticated.value = true
+  } catch (err) {
+    console.error('사용자 정보 조회 실패:', err)
+    if (err.response?.status === 401) {
+      logout()
     }
   }
+}
 
   // 로그인
   const login = async (router, Swal) => {
@@ -50,7 +60,8 @@ export const useAuthStore = defineStore('auth', () => {
 
       setAuthToken(res.data.access)
       localStorage.setItem('refresh', res.data.refresh)
-
+      isAuthenticated.value = true
+      
       await fetchUserStatus()
 
       await Swal.fire({
@@ -63,6 +74,7 @@ export const useAuthStore = defineStore('auth', () => {
 
       router.push({ name: 'home' })
     } catch (err) {
+      isAuthenticated.value = false
       Swal.fire({
         icon: 'error',
         title: '로그인 실패!',
@@ -72,6 +84,33 @@ export const useAuthStore = defineStore('auth', () => {
       })
     }
   }
+
+  // 로그아웃
+  const logout = async (Swal, router) => {
+  localStorage.removeItem('access')
+  localStorage.removeItem('refresh')
+  delete axios.defaults.headers.common['Authorization']
+  isAuthenticated.value = false
+
+  username.value = ''
+  password1.value = ''
+  password2.value = ''
+  nickname.value = ''
+
+  // ✅ Swal 알림 추가
+  if (Swal && router) {
+    await Swal.fire({
+      icon: 'success',
+      title: '로그아웃 완료!',
+      text: '다음에 또 만나요 😊',
+      confirmButtonText: '확인',
+      customClass: {
+        confirmButton: 'custom-ok-button-blue',
+      }
+    })
+    router.push({ name: 'signin' })
+  }
+}
 
   // 회원가입
   const signup = async (router, Swal) => {
@@ -84,7 +123,6 @@ export const useAuthStore = defineStore('auth', () => {
         customClass: { confirmButton: 'custom-ok-button-red' },
       })
     }
-    console.log(password1)
 
     if (password1.value !== password2.value) {
       return Swal.fire({
@@ -124,7 +162,7 @@ export const useAuthStore = defineStore('auth', () => {
 
   return {
     username, password1, password2, nickname,
-    readPages, totalPoints,
-    login, signup, fetchUserStatus, initAuth
+    readPages, totalPoints, isAuthenticated,
+    login, signup, logout, fetchUserStatus, initAuth,
   }
 })

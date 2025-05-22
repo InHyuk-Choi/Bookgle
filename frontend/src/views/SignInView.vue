@@ -4,7 +4,7 @@
       <h2 class="text-3xl font-extrabold text-center text-[#444]">로그인</h2>
       <form @submit.prevent="login" class="space-y-6">
         <input v-model="auth.username" placeholder="아이디" class="input" />
-        <input v-model="auth.password" type="password" placeholder="비밀번호" class="input" />
+        <input v-model="auth.password1" type="password" placeholder="비밀번호" class="input" />
         <button type="submit" class="submit-btn">로그인</button>
       </form>
     </div>

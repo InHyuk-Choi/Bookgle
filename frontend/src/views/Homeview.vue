@@ -6,7 +6,23 @@
       <img src="/bookcase.png" class="w-10 h-10 object-contain hover:scale-110 transition-transform mt-[-4px]" />
       <img src="/favicon.png" alt="logo" class="w-28 h-20 object-contain" />
       <div class="flex gap-6 items-center">
-        <img src="/box.png" alt="보관함" class="w-10 h-10 object-contain hover:scale-110 transition-transform cursor-pointer" />
+          <div>
+    <!-- 📦 보관함 버튼 -->
+    <img
+      src="/box.png"
+      alt="보관함"
+      class="w-10 h-10 object-contain cursor-pointer hover:scale-110 transition-transform"
+      @click="openInventory"
+    />
+
+    <!-- 📦 보관함 사이드바 -->
+    <InventorySidebar
+  :isOpen="showInventory"
+  :foodBasic="foodBasic"
+  :foodPremium="foodPremium"
+  @close="showInventory = false"
+/>
+  </div>
         <img src="/cart.png" alt="상점" class="w-10 h-10 object-contain hover:scale-110 transition-transform cursor-pointer" @click="router.push({ name: 'store' })" />
       </div>
     </div>
@@ -30,6 +46,17 @@ import PetStatus from '@/components/PetStatus.vue'
 import LevelInfo from '@/components/LevelInfo.vue'
 import BottomNavbar from '@/components/BottomNavbar.vue'
 import { useRouter } from 'vue-router'
+import { ref } from 'vue'
+import InventorySidebar from '@/components/InventorySidebar.vue'
 
+const showInventory = ref(false)
+const openInventory = () => {
+  showInventory.value = true
+}
+
+// ✅ 테스트용 보유 먹이 수
+const foodBasic = ref(3)
+const foodPremium = ref(1)
 const router = useRouter()
+
 </script>
