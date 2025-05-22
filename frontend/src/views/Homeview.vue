@@ -1,50 +1,35 @@
 <template>
-  <main class="pt-[100px] pb-20 flex flex-col items-center bg-[#fffdf8] min-h-screen relative">
+  <div class="relative h-screen overflow-hidden bg-[#fffdf8]">
 
     <!-- 🧷 상단 고정된 아이콘 바 -->
     <div class="fixed top-0 w-full flex justify-between items-center px-6 py-2 z-50 bg-[#fffdf8]">
-      
-      <!-- 왼쪽: 책 아이콘 -->
-      <img
-        src="/bookcase.png"
-        class="w-10 h-10 object-contain hover:scale-110 transition-transform mt-[-4px]"
-      />
-
-      <!-- 가운데: 로고 -->
-      <img
-        src="/favicon.png"
-        alt="logo"
-        class="w-28 h-20 object-contain"
-      />
-
-      <!-- 오른쪽: 상점 & 보관함 -->
+      <img src="/bookcase.png" class="w-10 h-10 object-contain hover:scale-110 transition-transform mt-[-4px]" />
+      <img src="/favicon.png" alt="logo" class="w-28 h-20 object-contain" />
       <div class="flex gap-6 items-center">
-                <img
-          src="/box.png"
-          alt="보관함"
-          class="w-10 h-10 object-contain hover:scale-110 transition-transform cursor-pointer"
-        />
-        <img
-          src="/cart.png"
-          alt="상점"
-          class="w-10 h-10 object-contain hover:scale-110 transition-transform cursor-pointer"
-        />
-
+        <img src="/box.png" alt="보관함" class="w-10 h-10 object-contain hover:scale-110 transition-transform cursor-pointer" />
+        <img src="/cart.png" alt="상점" class="w-10 h-10 object-contain hover:scale-110 transition-transform cursor-pointer" @click="router.push({ name: 'store' })" />
       </div>
     </div>
 
-    <!-- 본문 콘텐츠 -->
-    <PetStatus />
-    <LevelInfo />
+    <!-- 📦 본문 콘텐츠: 수직 중앙 배치 -->
+<main
+      class="absolute top-[88px] bottom-[64px] left-0 right-0 flex justify-center items-center overflow-y-auto">
+          <div class="flex flex-col items-center gap-4 transform scale-[0.85] sm:scale-[0.9] md:scale-100 origin-center">
+      <PetStatus />
+      <LevelInfo />
+      </div>
+    </main>
+
+    <!-- 🔒 하단 고정 바텀 네브바 -->
     <BottomNavbar />
-  </main>
+  </div>
 </template>
 
+<script setup>
+import PetStatus from '@/components/PetStatus.vue'
+import LevelInfo from '@/components/LevelInfo.vue'
+import BottomNavbar from '@/components/BottomNavbar.vue'
+import { useRouter } from 'vue-router'
 
-
-  <script setup>
-  import PetStatus from '@/components/PetStatus.vue'
-  import LevelInfo from '@/components/LevelInfo.vue'
-  import BottomNavbar from '@/components/BottomNavbar.vue'
-  </script>
-  
+const router = useRouter()
+</script>
