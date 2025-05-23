@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import axios from 'axios'
 
 export const useAuthStore = defineStore('auth', () => {
@@ -9,59 +9,114 @@ export const useAuthStore = defineStore('auth', () => {
   const nickname = ref('')
   const readPages = ref(0)
   const totalPoints = ref(0)
+  const followersCount = ref(0)
+  const followingCount = ref(0)
+  const isLoading = ref(true)
+  const basicFood = ref(0)
+  const premiumFood = ref(0)
+  const profileImage = ref('')
+  const userId = ref(0)
+  const bookworm = ref({
+    name: '',
+    level: 1,
+    experience: 0,
+    exp_to_next: 100,
+    progress: 0,
+  })
+
+  const fetchBookwormStatus = async () => {
+    try {
+      const res = await axios.get('http://localhost:8000/api/v1/kkubook/bookworm/status/')
+      bookworm.value = res.data
+    } catch (err) {
+      console.error('책벌레 상태 조회 실패:', err)
+    }
+  }
+
+  const feedBookworm = async (type) => {
+    try {
+      const res = await axios.post('http://localhost:8000/api/v1/kkubook/bookworm/feed/', {
+        type
+      })
+
+      bookworm.value.level = res.data.level
+      bookworm.value.experience = res.data.experience
+      bookworm.value.exp_to_next = res.data.exp_to_next
+      bookworm.value.progress = Math.round(res.data.experience / res.data.exp_to_next * 1000) / 1000
+      basicFood.value = res.data.basic_food
+      premiumFood.value = res.data.premium_food
+
+    } catch (err) {
+      console.error('먹이 주기 실패:', err)
+    }
+  }
+
+  const purchaseFood = async ({ type, quantity, cost }) => {
+    try {
+      const res = await axios.post('http://localhost:8000/api/v1/accounts/food/purchase/', {
+        type, quantity, cost
+      })
+
+      totalPoints.value = res.data.total_points
+      basicFood.value = res.data.basic_food
+      premiumFood.value = res.data.premium_food
+    } catch (err) {
+      console.error('먹이 구매 실패:', err)
+    }
+  }
+
   const isAuthenticated = ref(false)
+  const isLoggedIn = computed(() => isAuthenticated.value)
 
-
-  // 토큰 저장 및 헤더 설정
-  const setAuthToken = (accessToken) => {
+  const setAccessToken = (accessToken) => {
     localStorage.setItem('access', accessToken)
     axios.defaults.headers.common['Authorization'] = `Bearer ${accessToken}`
   }
 
-  const initAuth = () => {
+  const initAuth = async () => {
     const token = localStorage.getItem('access')
     if (token) {
-      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`
-      isAuthenticated.value = true  // ✅ 앱 재시작 시 로그인 상태 복원
+      setAccessToken(token)
+      isAuthenticated.value = true
+      await fetchUserStatus()
+      await fetchBookwormStatus()
+    } else {
+      isAuthenticated.value = false
     }
+    isLoading.value = false
   }
 
-  // 사용자 정보 로드
   const fetchUserStatus = async () => {
-  const token = localStorage.getItem('access')
-  if (!token) return  // ❗ 토큰 없으면 요청도 하지 않음
+    try {
+      const res = await axios.get('http://localhost:8000/api/v1/accounts/me/', {
+        withCredentials: true
+      })
+      totalPoints.value = res.data.total_points
+      nickname.value = res.data.nickname 
+      readPages.value = res.data.read_pages
+      followersCount.value = res.data.followers_count
+      followingCount.value = res.data.following_count
+      basicFood.value = res.data.basic_food
+      premiumFood.value = res.data.premium_food
+      profileImage.value = res.data.profile_image
+      userId.value = res.data.id
 
-  try {
-    const res = await axios.get('http://localhost:8000/api/v1/accounts/me/', {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      }
-    })
-    username.value = res.data.username
-    nickname.value = res.data.nickname 
-    totalPoints.value = res.data.total_points
-    readPages.value = res.data.read_pages
-    isAuthenticated.value = true
-  } catch (err) {
-    console.error('사용자 정보 조회 실패:', err)
-    if (err.response?.status === 401) {
-      logout()
+    } catch (err) {
+      console.error('유저 상태 조회 실패:', err)
     }
   }
-}
 
-  // 로그인
   const login = async (router, Swal) => {
     try {
-      const res = await axios.post('http://localhost:8000/api/v1/accounts/token/', {
+      const res = await axios.post('http://localhost:8000/api/v1/accounts/custom-login/', {
         username: username.value,
         password: password1.value,
-      })
+      }, { withCredentials: true })
 
-      setAuthToken(res.data.access)
-      localStorage.setItem('refresh', res.data.refresh)
+      setAccessToken(res.data.access)
       isAuthenticated.value = true
-      
+      await new Promise(resolve => setTimeout(resolve, 100))
+
       await fetchUserStatus()
 
       await Swal.fire({
@@ -74,7 +129,6 @@ export const useAuthStore = defineStore('auth', () => {
 
       router.push({ name: 'home' })
     } catch (err) {
-      isAuthenticated.value = false
       Swal.fire({
         icon: 'error',
         title: '로그인 실패!',
@@ -85,34 +139,29 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
-  // 로그아웃
   const logout = async (Swal, router) => {
-  localStorage.removeItem('access')
-  localStorage.removeItem('refresh')
-  delete axios.defaults.headers.common['Authorization']
-  isAuthenticated.value = false
+    localStorage.removeItem('access')
+    delete axios.defaults.headers.common['Authorization']
+    isAuthenticated.value = false
 
-  username.value = ''
-  password1.value = ''
-  password2.value = ''
-  nickname.value = ''
+    username.value = ''
+    password1.value = ''
+    nickname.value = ''
 
-  // ✅ Swal 알림 추가
-  if (Swal && router) {
-    await Swal.fire({
-      icon: 'success',
-      title: '로그아웃 완료!',
-      text: '다음에 또 만나요 😊',
-      confirmButtonText: '확인',
-      customClass: {
-        confirmButton: 'custom-ok-button-blue',
-      }
-    })
-    router.push({ name: 'signin' })
+    if (Swal && router) {
+      await Swal.fire({
+        icon: 'success',
+        title: '로그아웃 완료!',
+        text: '다음에 또 만나요 😊',
+        confirmButtonText: '확인',
+        customClass: {
+          confirmButton: 'custom-ok-button-blue',
+        }
+      })
+      router.push({ name: 'signin' })
+    }
   }
-}
 
-  // 회원가입
   const signup = async (router, Swal) => {
     if (!nickname.value.trim()) {
       return Swal.fire({
@@ -120,7 +169,7 @@ export const useAuthStore = defineStore('auth', () => {
         title: '닉네임 필수!',
         text: '닉네임을 입력해주세요.',
         confirmButtonText: '확인',
-        customClass: { confirmButton: 'custom-ok-button-red' },
+        customClass: { confirmButton: 'custom-ok-button-red' }
       })
     }
 
@@ -130,7 +179,7 @@ export const useAuthStore = defineStore('auth', () => {
         title: '비밀번호 불일치!',
         text: '비밀번호가 서로 다릅니다.',
         confirmButtonText: '확인',
-        customClass: { confirmButton: 'custom-ok-button-red' },
+        customClass: { confirmButton: 'custom-ok-button-red' }
       })
     }
 
@@ -145,10 +194,10 @@ export const useAuthStore = defineStore('auth', () => {
 
       await login(router, Swal)
     } catch (err) {
-      console.error('회원가입 실패 응답:', err.response?.data)
+      console.error('회원가입 실패:', err.response?.data)
       Swal.fire({
         icon: 'error',
-        title: '에러!',
+        title: '회원가입 실패',
         text: err.response?.data?.nickname?.[0] ||
               err.response?.data?.username?.[0] ||
               err.response?.data?.email?.[0] ||
@@ -163,6 +212,9 @@ export const useAuthStore = defineStore('auth', () => {
   return {
     username, password1, password2, nickname,
     readPages, totalPoints, isAuthenticated,
+    isLoggedIn, profileImage,followersCount,
+  followingCount, userId, 
     login, signup, logout, fetchUserStatus, initAuth,
+    basicFood, premiumFood, bookworm, fetchBookwormStatus, feedBookworm, purchaseFood
   }
 })

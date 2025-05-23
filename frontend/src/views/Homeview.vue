@@ -18,8 +18,8 @@
     <!-- 📦 보관함 사이드바 -->
     <InventorySidebar
   :isOpen="showInventory"
-  :foodBasic="foodBasic"
-  :foodPremium="foodPremium"
+  :foodBasic="auth.basicFood"
+  :foodPremium="auth.premiumFood"
   @close="showInventory = false"
 />
   </div>
@@ -48,15 +48,16 @@ import BottomNavbar from '@/components/BottomNavbar.vue'
 import { useRouter } from 'vue-router'
 import { ref } from 'vue'
 import InventorySidebar from '@/components/InventorySidebar.vue'
+import { useAuthStore } from '@/stores/auth'
 
+
+const router = useRouter()
 const showInventory = ref(false)
 const openInventory = () => {
   showInventory.value = true
 }
 
-// ✅ 테스트용 보유 먹이 수
-const foodBasic = ref(3)
-const foodPremium = ref(1)
-const router = useRouter()
+
+const auth = useAuthStore()
 
 </script>

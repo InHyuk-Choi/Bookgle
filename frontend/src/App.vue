@@ -13,7 +13,7 @@
 
   <!-- 메뉴 버튼들 -->
   <div class="flex items-center space-x-3">
-    <template v-if="!isLoggedIn">
+    <template v-if="!auth.isLoading && !auth.isLoggedIn">
       <RouterLink
         to="/signin"
         class="px-4 py-1.5 text-sm font-medium text-white bg-blue-500 rounded-full shadow hover:bg-blue-600 transition"
@@ -28,7 +28,7 @@
       </RouterLink>
     </template>
 
-    <template v-else>
+    <template v-else-if="!auth.isLoading && auth.isLoggedIn">
       <button
         @click="logout"
         class="px-4 py-1.5 text-sm font-medium text-white bg-red-500 rounded-full shadow hover:bg-red-600 transition"
@@ -36,7 +36,7 @@
         로그아웃
       </button>
     </template>
-  </div>
+  </div> 
 </nav>
 
 
@@ -46,30 +46,27 @@
 </template>
 
 <script setup>
-import { computed, onMounted } from 'vue'
+import { onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
-import axios from 'axios'
 import Swal from 'sweetalert2'
-
-
 
 const router = useRouter()
 const auth = useAuthStore()
 
-// ✅ 반응형 로그인 상태
-const isLoggedIn = computed(() => auth.isAuthenticated)
-
 onMounted(() => {
-  auth.initAuth()
-  auth.fetchUserStatus()
+  auth.initAuth()  // ✅ 앱 시작 시 모든 상태 세팅
 })
 
-// ✅ auth의 logout 사용
+// ✅ 반응형 로그인 상태
+const isLoggedIn = auth.isLoggedIn
+
+// ✅ 로그아웃 함수
 const logout = () => {
   auth.logout(Swal, router)
 }
 </script>
+
 
 <style>
 body {

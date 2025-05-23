@@ -1,11 +1,11 @@
 <template>
 <div class="relative w-full max-w-[320px] sm:max-w-[360px] md:max-w-[400px] aspect-square flex items-center justify-center">
   <img
-    src="/char6.gif"
-    alt="캐릭터"
-    class="w-full h-full object-contain cursor-pointer"
-    @click="toggleBubble"
-  />
+  :src="characterImage"
+  alt="캐릭터"
+  class="w-full h-full object-contain cursor-pointer"
+  @click="toggleBubble"
+/>
 
 
 
@@ -41,7 +41,7 @@
       class="w-full bg-yellow-50 border border-yellow-300 rounded-full
              px-4 py-2 mt-3 text-center text-lg focus:outline-none focus:ring-2
              focus:ring-yellow-400 transition shadow-inner"
-    />
+    />  
     <div class="flex justify-end mt-3 gap-2">
       <button
   @click="submitPages"
@@ -71,6 +71,8 @@ import { ref, onMounted } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import axios from 'axios'
 import Swal from 'sweetalert2'
+import { computed } from 'vue'
+
 
 const auth = useAuthStore()
 const showBubble = ref(false)
@@ -81,6 +83,17 @@ const inputMode = ref(false)
 const toggleBubble = () => {
   showBubble.value = !showBubble.value
 }
+
+const characterImage = computed(() => {
+  const level = auth.bookworm.level
+  if (level >= 60) return '/char7.gif'
+  if (level >= 50) return '/char6.gif'
+  if (level >= 40) return '/char5.gif'
+  if (level >= 30) return '/char4.gif'
+  if (level >= 20) return '/char3.gif'
+  if (level >= 10) return '/char2.gif'
+  return '/char1.gif'
+})
 
 const submitPages = async () => {
   const pageNum = parseInt(todayPages.value)
