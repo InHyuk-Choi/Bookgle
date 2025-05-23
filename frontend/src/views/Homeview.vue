@@ -35,7 +35,7 @@
       <LevelInfo />
       </div>
     </main>
-
+    
     <!-- 🔒 하단 고정 바텀 네브바 -->
     <BottomNavbar />
   </div>

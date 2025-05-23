@@ -28,23 +28,32 @@
       <h3 class="text-lg font-semibold mb-4">📷 내가 쓴 피드</h3>
       <div v-if="myFeeds.length" class="grid grid-cols-3 gap-2">
         <div
-          v-for="feed in myFeeds"
-          :key="feed.id"
-          class="aspect-square bg-gray-100 overflow-hidden rounded-md"
-        >
+  v-for="feed in myFeeds"
+  :key="feed.id"
+  class="aspect-square bg-gray-100 overflow-hidden rounded-md cursor-pointer hover:opacity-80 transition"
+  @click="router.push({ name: 'feed-detail', params: { id: feed.id } })"
+>
           <img
             v-if="feed.image"
             :src="feed.image"
             class="w-full h-full object-cover"
           />
-          <div v-else class="flex items-center justify-center h-full text-sm text-gray-500 px-2 text-center">
-            {{ feed.content.slice(0, 20) }}...
-          </div>
+         <div v-else class="relative w-full h-full rounded-md overflow-hidden">
+  <img src="/placeholder-feed.jpg" class="w-full h-full object-cover opacity-40" />
+  <div class="absolute inset-0 flex items-center justify-center text-center text-sm text-gray-800 font-semibold px-3">
+    {{ feed.content.slice(0, 20) }}...
+  </div>
+</div>
         </div>
       </div>
       <p v-else class="text-gray-400 text-sm text-center mt-10">작성한 피드가 아직 없어요!</p>
     </div>
-
+    <button
+  @click="router.push({ name: 'feed-write' })"
+  class="fixed bottom-20 right-6 bg-yellow-400 text-white w-14 h-14 rounded-full shadow-lg hover:bg-yellow-500 transition text-2xl flex items-center justify-center z-50"
+>
+  ✍️
+</button>
     <!-- 🔁 무한 스크롤 감지용 -->
     <div ref="scrollObserver" class="h-4"></div>
   </div>
@@ -74,12 +83,17 @@ const scrollObserver = ref(null)
 
 const fetchMyFeeds = async () => {
   try {
-    const res = await axios.get('http://localhost:8000/api/v1/feeds/me/')
+    const res = await axios.get('http://localhost:8000/api/v1/kkubook/pheeds/me/', {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('access')}`
+      }
+    })
     myFeeds.value = res.data
   } catch (err) {
     console.error('내 피드 가져오기 실패:', err)
   }
 }
+
 
 const goToFollowing = () => {
   router.push({ name: 'following-list', params: { userId: auth.userId } })

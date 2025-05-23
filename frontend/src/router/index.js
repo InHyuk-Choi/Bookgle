@@ -5,6 +5,8 @@ import SignInView from '@/views/SignInView.vue'
 import SignUpView from '@/views/SignUpView.vue'
 import ProfileView from '@/views/ProfileView.vue'
 import StoreView from '@/views/StoreView.vue'
+import FeedView from '@/views/FeedView.vue'
+import FeedWriteView from '@/views/FeedWriteView.vue'
 
 const routes = [
   { path: '/', name: 'home', component: HomeView },
@@ -34,7 +36,18 @@ const routes = [
     title: '팔로워 목록',
     apiUrl: 'http://localhost:8000/api/v1/accounts/followers/<user_id>/', // 이 부분 실제 user_id로 교체 필요
   }
-}
+},
+{ path: '/feed', name: 'feed', component: FeedView },
+
+{ path: '/feed/write', name: 'feed-write', component: FeedWriteView },
+{
+  path: '/feeds/:id',
+  name: 'feed-detail',
+  component: () => import('@/views/FeedDetailView.vue'),
+  props: true,
+},
+
+
 ]
 const router = createRouter({
   history: createWebHistory(),
