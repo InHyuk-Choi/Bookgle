@@ -106,12 +106,32 @@ const submitPages = async () => {
     await axios.post('http://localhost:8000/api/v1/accounts/pages/set/', {
       pages: pageNum
     })
-    Swal.fire('기록 완료!', `${pageNum}페이지까지 읽었어요!.`, 'success')
+    Swal.fire({
+  icon: 'success',
+  title: '기록 완료!',
+  text: `${pageNum}페이지까지 읽었어요!`,
+  customClass: {
+    popup: 'bg-white text-gray-900',
+    icon: 'text-green-500',
+    confirmButton: 'bg-yellow-400 text-white rounded px-4 py-2 mt-2 hover:bg-yellow-500'
+  }
+})
+
     showModal.value = false
     auth.fetchUserStatus() // 갱신
   } catch (err) {
     console.error(err)
-    Swal.fire('오류 발생', '페이지 기록 중 문제가 생겼어요.', 'error')
+    Swal.fire({
+  icon: 'error',
+  title: '잘못된 입력',
+  text: '0 이상의 숫자를 입력해주세요!',
+  customClass: {
+    popup: 'bg-white text-gray-900',
+    icon: 'text-red-500',
+    confirmButton: 'bg-red-400 text-white rounded px-4 py-2 mt-2 hover:bg-red-500'
+  }
+})
+
   }
 }
 

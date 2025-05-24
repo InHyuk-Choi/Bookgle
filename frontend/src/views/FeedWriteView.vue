@@ -46,6 +46,7 @@
 import { ref } from 'vue'
 import axios from 'axios'
 import { useRouter } from 'vue-router'
+import Swal from 'sweetalert2'
 
 const router = useRouter()
 const content = ref('')
@@ -75,11 +76,38 @@ const submitPheed = async () => {
       }
     })
 
-    alert('피드 작성 완료! ✨')
+    await Swal.fire({
+      icon: 'success',
+      title: '피드 작성 완료!',
+      text: '게시글이 정상적으로 등록되었어요 ✨',
+      customClass: {
+        popup: 'bg-white text-gray-900',
+        icon: 'text-green-500',
+        confirmButton: 'bg-yellow-400 text-white font-bold rounded px-4 py-2 mt-2 hover:bg-yellow-500'
+      }
+    })
     router.push({ name: 'feed' })
   } catch (err) {
-    console.error('피드 작성 실패:', err)
-    alert('작성 중 오류가 발생했어요 😢')
+    console.error('❌ 피드 작성 실패:', err)
+
+    const errorData = err.response?.data
+    const errorText = errorData
+      ? Object.entries(errorData)
+          .map(([field, messages]) => `${field}: ${messages.join(', ')}`)
+          .join('\n')
+      : '작성 중 오류가 발생했어요 😢'
+
+    await Swal.fire({
+      icon: 'error',
+      title: '작성 실패',
+      text: errorText,
+      customClass: {
+        popup: 'bg-white text-gray-900',
+        icon: 'text-red-500',
+        confirmButton: 'bg-red-400 text-white font-bold rounded px-4 py-2 mt-2 hover:bg-red-500'
+      }
+    })
   }
 }
+
 </script>

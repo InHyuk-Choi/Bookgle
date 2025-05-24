@@ -10,7 +10,11 @@ LEVEL_EXPERIENCE_TABLE = {
     **{i: 3300 + (i - 30) * 200 for i in range(30, 40)},
     **{i: 5300 + (i - 40) * 250 for i in range(40, 50)},
     **{i: 7800 + (i - 50) * 350 for i in range(50, 60)},
-    **{i: 11300 + (i - 60) * 500 for i in range(60, 71)},
+    **{i: 11300 + (i - 60) * 500 for i in range(60, 100)},
+    **{i: 31300 + (i - 100) * 1000 for i in range(100, 200)},
+    **{i: 131300 + (i - 200) * 1500 for i in range(200, 400)},
+    **{i: 431300 + (i - 400) * 2000 for i in range(400, 700)},
+    **{i: 1031300 + (i - 700) * 2500 for i in range(700, 1001)},
 }
 
 class Bookworm(models.Model):
@@ -20,8 +24,9 @@ class Bookworm(models.Model):
     experience = models.IntegerField(default=0)
 
     def experience_to_next_level(self):
-        return LEVEL_EXPERIENCE_TABLE.get(self.level, 999999999) # 9999..는 레벨이 한도를 초과했을 때를 대비한 보호장치
-
+        if self.level >= 1000:
+            return 0
+        return LEVEL_EXPERIENCE_TABLE.get(self.level, 999999999)
     def add_experience(self, amount):
         self.experience += amount
         while self.experience >= self.experience_to_next_level():

@@ -65,10 +65,16 @@ const giveTestPoints = async () => {
 const buy = async (type, price) => {
   if (auth.totalPoints < price) {
     await Swal.fire({
-      icon: 'error',
-      title: '포인트 부족!',
-      text: '포인트가 부족해요!',
-    })
+  icon: 'error',
+  title: '포인트 부족!',
+  text: '포인트가 부족해요!',
+  customClass: {
+    popup: 'bg-white text-gray-900',
+    icon: 'text-red-500',
+    confirmButton: 'custom-ok-button-red',
+  }
+})
+
     return
   }
 

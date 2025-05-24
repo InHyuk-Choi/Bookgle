@@ -14,11 +14,7 @@ const routes = [
   { path: '/signup', name: 'signup', component: SignUpView },
   { path: '/profile', name: 'profile', component: ProfileView },
   { path: '/store', name: 'store', component: StoreView },
-  {
-  path: '/profile/upload',
-  name: 'profile-upload',
-  component: () => import('@/views/ProfileImageUpload.vue'),
-},
+  
 {
   path: '/profile/following',
   name: 'following-list',
