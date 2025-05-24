@@ -3,6 +3,10 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
 from django.shortcuts import get_object_or_404
+from rest_framework.permissions import AllowAny
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
 
 from .models import Bookworm, Pheed, Comment
 from .serializers import PheedSerializer, CommentSerializer
@@ -166,3 +170,12 @@ def update_delete_comment(request, comment_id):
     elif request.method == 'DELETE':
         comment.delete()
         return Response({'message': '댓글 삭제 완료'}, status=204)
+
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def user_pheeds_by_username(request, username):
+    user = get_object_or_404(User, username=username)
+    pheeds = Pheed.objects.filter(user=user).order_by('-created_at')
+    serializer = PheedSerializer(pheeds, many=True, context={'request': request})
+    return Response(serializer.data)

@@ -7,6 +7,8 @@ import ProfileView from '@/views/ProfileView.vue'
 import StoreView from '@/views/StoreView.vue'
 import FeedView from '@/views/FeedView.vue'
 import FeedWriteView from '@/views/FeedWriteView.vue'
+import RankingView from '@/views/RankingView.vue'
+import FollowListView from '@/views/FollowListView.vue'
 
 const routes = [
   { path: '/', name: 'home', component: HomeView },
@@ -16,21 +18,21 @@ const routes = [
   { path: '/store', name: 'store', component: StoreView },
   
 {
-  path: '/profile/following',
-  name: 'following-list',
-  component: () => import('@/views/FollowListView.vue'),
+  path: '/followers/:username',
+  name: 'followers',
+  component: FollowListView,
   meta: {
-    title: '팔로잉 목록',
-    apiUrl: 'http://localhost:8000/api/v1/accounts/following/<user_id>/', // 이 부분 실제 user_id로 교체 필요
+    type: 'followers',
+    title: '팔로워 목록'
   }
 },
 {
-  path: '/profile/followers',
-  name: 'follower-list',
-  component: () => import('@/views/FollowListView.vue'),
+  path: '/following/:username',
+  name: 'following',
+  component: FollowListView,
   meta: {
-    title: '팔로워 목록',
-    apiUrl: 'http://localhost:8000/api/v1/accounts/followers/<user_id>/', // 이 부분 실제 user_id로 교체 필요
+    type: 'following',
+    title: '팔로잉 목록'
   }
 },
 { path: '/feed', name: 'feed', component: FeedView },
@@ -42,6 +44,26 @@ const routes = [
   component: () => import('@/views/FeedDetailView.vue'),
   props: true,
 },
+  {
+    path: '/ranking',
+    name: 'ranking',
+    component: RankingView,
+  },
+ {
+  path: '/user/:username',
+  name: 'UserProfile',
+  component: () => import('@/views/OthersProfileView.vue'),
+  props: true,
+  beforeEnter: (to, from, next) => {
+    const currentUsername = localStorage.getItem('currentUsername')
+    if (to.params.username === currentUsername) {
+      next({ name: 'profile' })
+    } else {
+      next()
+    }
+  }
+},
+
 
 
 ]

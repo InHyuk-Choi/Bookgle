@@ -5,17 +5,23 @@
       <!-- 📋 피드 카드 리스트 -->
       <div v-for="feed in feeds" :key="feed.id" class="bg-white rounded-xl shadow mb-6 overflow-hidden">
         <!-- 🧑 유저 정보 -->
-        <div class="flex items-center p-4 border-b">
-          <img
-            :src="getProfileImage(feed.user)"
-            class="w-10 h-10 rounded-full mr-3 object-cover"
-          />
-          <div>
-            <p class="font-semibold text-sm">{{ feed.user.nickname }}</p>
-            <p class="text-xs text-gray-400">{{ formatDate(feed.created_at) }}</p>
-          </div>
-        </div>
 
+<div class="flex items-center p-4 border-b">
+  <RouterLink
+    :to="{ name: 'UserProfile', params: { username: feed.user.username } }"
+    class="flex items-center hover:bg-gray-50 transition"
+  >
+    <img
+      :src="getProfileImage(feed.user)"
+      class="w-10 h-10 rounded-full mr-3 object-cover"
+    />
+    <div>
+      <p class="font-semibold text-sm">{{ feed.user.nickname }}</p>
+      <p class="text-xs text-gray-400">{{ formatDate(feed.created_at) }}</p>
+    </div>
+  </RouterLink>
+
+        </div>
         <!-- ✨ 이미지 or 내용 -->
         <div v-if="feed.image" class="w-full">
           <img :src="feed.image" class="w-full max-h-[300px] object-cover" />
@@ -99,19 +105,25 @@ const fetchFeeds = async () => {
     })
 
     // ✅ 각 피드 객체에 liked 필드 추가해서 상태 유지
-    feeds.value = res.data.map(feed => ({
-      ...feed,
-      liked: feed.is_liked,  // ← 여기!
-    }))
+    feeds.value = res.data.map(feed => {
+  return {
+    ...feed,
+    liked: feed.is_liked,
+  }
+})
   } catch (err) {
     console.error('피드 가져오기 실패:', err)
   }
 }
 
-
 const getProfileImage = (user) => {
-  return user.profile_image || '/default-profile.png'
+  const img = user.profile_image
+  if (!img || img === '') {
+    return '/default-profile.png'
+  }
+  return img.startsWith('http') ? img : `http://localhost:8000${img}`
 }
+
 
 const formatDate = (dateStr) => {
   return new Date(dateStr).toLocaleString()

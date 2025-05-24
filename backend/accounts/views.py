@@ -1,14 +1,17 @@
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from rest_framework import status
 from django.contrib.auth import get_user_model, authenticate
 from django.shortcuts import get_object_or_404
-from .serializers import FollowUserSerializer, ProfileImageSerializer
+from .serializers import FollowUserSerializer, ProfileImageSerializer, RankingUserSerializer
+from kkubook.models import Bookworm
+from accounts.serializers import BookwormRankingSerializer
 
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.exceptions import TokenError
+
 
 User = get_user_model()
 
@@ -65,6 +68,11 @@ def refresh_access_token_view(request):
 @permission_classes([IsAuthenticated])
 def user_detail_view(request):
     user = request.user
+    profile_url = (
+        request.build_absolute_uri(user.profile_image.url)
+        if user.profile_image
+        else request.build_absolute_uri('/media/default-profile.png')
+    )
     return Response({
         'id': user.id,
         'username': user.username,
@@ -76,8 +84,7 @@ def user_detail_view(request):
         'following_count': user.following.count(),
         'basic_food': user.basic_food,      
         'premium_food': user.premium_food,
-        'profile_image': user.profile_image.url if user.profile_image else '',
-
+        'profile_image': profile_url,
     })
 
 
@@ -182,21 +189,21 @@ def toggle_follow(request, user_id):
         user.following.add(target_user)
         return Response({"detail": "팔로우 완료"}, status=200)
 
-# 팔로우 정보 확인
+# views.py
 @api_view(['GET'])
-@permission_classes([IsAuthenticated])
-def following_list(request, user_id):
-    user = get_object_or_404(User, id=user_id)
-    following_users = user.following.all()
-    serializer = FollowUserSerializer(following_users, many=True)
+@permission_classes([AllowAny])
+def user_followers(request, username):
+    user = get_object_or_404(User, username=username)
+    followers = user.followers.all()
+    serializer = FollowUserSerializer(followers, many=True, context={'request': request})
     return Response(serializer.data)
 
 @api_view(['GET'])
-@permission_classes([IsAuthenticated])
-def follower_list(request, user_id):
-    user = get_object_or_404(User, id=user_id)
-    followers = user.followers.all()
-    serializer = FollowUserSerializer(followers, many=True)
+@permission_classes([AllowAny])
+def user_following(request, username):
+    user = get_object_or_404(User, username=username)
+    following = user.following.all()
+    serializer = FollowUserSerializer(following, many=True, context={'request': request})
     return Response(serializer.data)
 
 @api_view(['GET'])
@@ -219,3 +226,47 @@ def upload_profile_image(request):
         serializer.save()
         return Response({'profile_image': serializer.data['profile_image']})
     return Response(serializer.errors, status=400)
+
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def bookworm_ranking(request):
+    bookworms = Bookworm.objects.select_related('owner').all().order_by('-level', '-experience')[:50]
+
+    serializer = BookwormRankingSerializer(
+            bookworms,
+            many=True,
+            context={'request': request}  # ← 이거 추가!
+        )
+
+    # rank 번호 붙이기
+    response_data = serializer.data
+    for idx, user in enumerate(response_data, start=1):
+        user['rank'] = idx
+
+    return Response(response_data)
+
+
+
+# views.py 하단에 추가
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def user_profile_by_username(request, username):
+    user = get_object_or_404(User, username=username)
+
+    profile_url = (
+        request.build_absolute_uri(user.profile_image.url)
+        if user.profile_image
+        else request.build_absolute_uri('/media/default-profile.png')
+    )
+
+    serializer = FollowUserSerializer(user, context={'request': request})
+    return Response({
+        **serializer.data,
+        'email': user.email,
+        'total_points': user.total_points,
+        'read_pages': user.total_pages_read,
+        'basic_food': user.basic_food,
+        'premium_food': user.premium_food,
+        'profile_image': profile_url,
+    })

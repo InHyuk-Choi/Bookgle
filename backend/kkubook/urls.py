@@ -22,4 +22,5 @@ urlpatterns = [
     path('comments/<int:comment_id>/', views.update_delete_comment, name='comment-detail'),
     
     path('pheeds/me/', views.my_pheeds, name='my-pheeds'),  
+    path('pheeds/user/<str:username>/', views.user_pheeds_by_username),
 ]

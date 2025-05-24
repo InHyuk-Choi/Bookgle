@@ -11,12 +11,14 @@
 />
 
 <label for="profile-upload">
-  <img
-    :src="profileImage"
-    alt="프로필 이미지"
-    class="w-28 h-28 rounded-full object-cover border-4 border-yellow-300 cursor-pointer hover:opacity-80 transition"
-    title="클릭하여 프로필 사진 변경"
-  />
+ <img
+  :src="profileImage"
+  @error="handleImageError"
+  alt="프로필 이미지"
+  class="w-28 h-28 rounded-full object-cover border-4 border-yellow-300 cursor-pointer hover:opacity-80 transition"
+  title="클릭하여 프로필 사진 변경"
+/>
+
 </label>
       <h2 class="text-2xl font-bold">{{ nickname }}</h2>
       <div class="flex gap-6 text-sm text-gray-700">
@@ -85,12 +87,21 @@ const totalPoints = computed(() => auth.totalPoints)
 const readPages = computed(() => auth.readPages)
 const followingCount = computed(() => auth.followingCount)
 const followersCount = computed(() => auth.followersCount)
-const profileImage = computed(() =>
-  auth.profileImage ? `http://localhost:8000${auth.profileImage}` : '/default-profile.png'
-)
+const profileImage = computed(() => {
+  const img = auth.profileImage
+  if (!img || img === '') {
+    return '/default-profile.png'
+  }
+  if (img.startsWith('http')) {
+    return img
+  }
+  return `http://localhost:8000${img}`
+})
+
 
 const myFeeds = ref([])
 const scrollObserver = ref(null)
+const username = computed(() => auth.username)
 
 const fetchMyFeeds = async () => {
   try {
@@ -137,11 +148,18 @@ const handleProfileChange = async (e) => {
   }
 }
 
-const goToFollowing = () => {
-  router.push({ name: 'following-list', params: { userId: auth.userId } })
-}
 const goToFollowers = () => {
-  router.push({ name: 'follower-list', params: { userId: auth.userId } })
+  router.push({
+    name: 'followers',
+    params: { username: username.value }  // ✅ 진짜 username!
+  })
+}
+
+const goToFollowing = () => {
+  router.push({
+    name: 'following',
+    params: { username: username.value }  // ✅ 이것도!
+  })
 }
 
 const logout = () => {
@@ -150,6 +168,9 @@ const logout = () => {
 
 onMounted(() => {
   fetchMyFeeds()
+  console.log('[내 프로필] auth.profileImage:', auth.profileImage)
+
+
 })
 </script>
 

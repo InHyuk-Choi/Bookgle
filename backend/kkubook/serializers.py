@@ -5,10 +5,17 @@ from django.contrib.auth import get_user_model
 User = get_user_model()
 
 class UserSimpleSerializer(serializers.ModelSerializer):
+    profile_image = serializers.SerializerMethodField()
+
     class Meta:
         model = User
-        fields = ['id', 'nickname','profile_image',]
+        fields = ['id', 'username', 'nickname', 'profile_image'] 
 
+    def get_profile_image(self, obj):
+        request = self.context.get('request')
+        if obj.profile_image:
+            return request.build_absolute_uri(obj.profile_image.url)
+        return request.build_absolute_uri('/media/default-profile.png')
 class CommentSerializer(serializers.ModelSerializer):
     user = UserSimpleSerializer(read_only=True)
 

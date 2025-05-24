@@ -14,7 +14,7 @@
       class="w-10 h-10 object-contain cursor-pointer hover:scale-110 transition-transform"
       @click="openInventory"
     />
-
+            
     <!-- 📦 보관함 사이드바 -->
     <InventorySidebar
   :isOpen="showInventory"
@@ -39,6 +39,7 @@
     <!-- 🔒 하단 고정 바텀 네브바 -->
     <BottomNavbar />
   </div>
+
 </template>
 
 <script setup>
@@ -51,13 +52,14 @@ import InventorySidebar from '@/components/InventorySidebar.vue'
 import { useAuthStore } from '@/stores/auth'
 
 
+
+const auth = useAuthStore()
+
 const router = useRouter()
 const showInventory = ref(false)
 const openInventory = () => {
   showInventory.value = true
 }
 
-
-const auth = useAuthStore()
 
 </script>
