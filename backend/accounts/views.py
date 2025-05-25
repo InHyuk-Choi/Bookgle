@@ -63,29 +63,42 @@ def refresh_access_token_view(request):
     except TokenError:
         return Response({'error': '유효하지 않은 refresh token입니다.'}, status=status.HTTP_401_UNAUTHORIZED)
 
-# 유저 정보 조회
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def user_detail_view(request):
     user = request.user
+
+    try:
+        latest_record = user.readingrecord_set.filter(is_finished=False).order_by('-created_at').first()
+        current_book_title = latest_record.book.title if latest_record and latest_record.book else None
+        read_pages = latest_record.pages if latest_record else 0
+    except Exception as e:
+        print(f"[DEBUG] 책 제목 조회 실패: {e}")
+        current_book_title = None
+        read_pages = 0
+
     profile_url = (
         request.build_absolute_uri(user.profile_image.url)
         if user.profile_image
         else request.build_absolute_uri('/media/default-profile.png')
     )
+
     return Response({
         'id': user.id,
         'username': user.username,
         'email': user.email,
         'nickname': user.nickname,
         'total_points': user.total_points,
-        'read_pages': user.total_pages_read,
+        'read_pages': read_pages,  # ✅ 여기!
         'followers_count': user.followers.count(),
         'following_count': user.following.count(),
-        'basic_food': user.basic_food,      
+        'basic_food': user.basic_food,
         'premium_food': user.premium_food,
         'profile_image': profile_url,
+        'current_book_title': current_book_title,
     })
+
+
 
 
 # 포인트 조회

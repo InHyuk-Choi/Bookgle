@@ -24,13 +24,37 @@
 >
   <!-- 기본 메시지 -->
   <template v-if="!inputMode">
-    <p class="font-bold text-lg mb-2">📖 지금까지 {{ auth.readPages }}페이지 읽었어!</p>
+  <template v-if="auth.currentBookTitle">
+    <p class="font-bold text-lg mb-2">
+      📖 지금까지 
+      <span class="text-blue-600 font-semibold">《{{ auth.currentBookTitle }}》</span>의 
+      <span class="text-yellow-600 font-semibold">{{ auth.readPages }}페이지</span>까지 읽었어!
+    </p>
     <p>오늘은 몇 페이지까지 읽을 거야?</p>
+
     <button
-      @click="inputMode = true"
+      @click="handleInputClick"
       class="mt-4 text-sm text-yellow-500 font-medium hover:underline"
     >입력하기</button>
+
+    <button
+      @click="goToBookSearch"
+      class="text-sm text-blue-500 font-medium hover:underline"
+    >책 고르기</button>
   </template>
+
+  <template v-else>
+    <p class="font-bold text-lg mb-2">
+      📖 아직 읽고 있는 책이 없어요!
+    </p>
+    <p>새 책을 등록해 볼까요?</p>
+    <button
+      @click="goToBookSearch"
+      class="mt-4 text-sm text-blue-500 font-medium hover:underline"
+    >책 고르기</button>
+  </template>
+</template>
+
 
   <!-- 입력 모드 -->
   <template v-else>
@@ -83,6 +107,79 @@ const inputMode = ref(false)
 const toggleBubble = () => {
   showBubble.value = !showBubble.value
 }
+import { useRouter } from 'vue-router'
+const router = useRouter()
+const goToBookSearch = () => {
+  router.push({ name: 'book-search' })  // 라우터 이름은 너가 등록할 이름으로!
+}
+const handleInputClick = async () => {
+  const result = await Swal.fire({
+    title: '📘 완독했나요?',
+    text: '이 책을 다 읽었나요?',
+    icon: 'question',
+    showCancelButton: true,
+    confirmButtonText: '예',
+    cancelButtonText: '아니오',
+    reverseButtons: false,
+    customClass: {
+      popup: 'bg-white text-gray-900',
+      confirmButton: 'bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600',
+      cancelButton: 'bg-gray-300 text-black px-4 py-2 rounded hover:bg-gray-400',
+    }
+  })
+
+  if (result.isConfirmed) {
+  try {
+    // ✅ 완독 처리 먼저 요청
+    await axios.post('http://localhost:8000/api/v1/kkubook/books/finish/', {
+      book_title: auth.currentBookTitle
+    })
+
+    // ✅ 그다음 퀴즈 페이지로 이동
+    router.push({ name: 'QuizView' })
+
+  } catch (err) {
+    Swal.fire({
+      icon: 'error',
+      title: '완독 처리 실패',
+      text: err.response?.data?.error || '완독 처리 중 문제가 발생했어요!',
+      confirmButtonText: '확인',
+    })}  // ✅ 퀴즈 페이지로 이동
+  } else {
+    // ❌ SweetAlert로 페이지 수 입력 받기
+    const { value: pages } = await Swal.fire({
+  title: '📄 몇 페이지까지 읽었나요?',
+  input: 'number',
+  inputLabel: '페이지 수를 입력해주세요',
+  inputPlaceholder: '예: 120',
+  confirmButtonText: '기록하기',
+  buttonsStyling: false,
+  customClass: {
+    popup: 'bg-white text-gray-900',
+    confirmButton: '!bg-yellow-400 !text-white !px-4 !py-2 !rounded !shadow-md hover:!bg-yellow-500',
+  },
+  didOpen: () => {
+    const actions = document.querySelector('.swal2-actions')
+    if (actions) {
+      actions.style.justifyContent = 'center'
+    }
+  },
+  inputValidator: (value) => {
+    if (!value || value < 0) {
+      return '0 이상의 숫자를 입력해주세요!'
+    }
+  }
+})
+
+
+
+
+    if (pages !== undefined) {
+      submitPages(Number(pages))  // ✅ 기록 처리 함수 실행
+    }
+  }
+}
+
 
 const characterImage = computed(() => {
   const level = auth.bookworm.level
@@ -94,44 +191,52 @@ const characterImage = computed(() => {
   if (level >= 10) return '/char2.gif'
   return '/char1.gif'
 })
-
-const submitPages = async () => {
-  const pageNum = parseInt(todayPages.value)
-  if (isNaN(pageNum) || pageNum < 0) {
-    Swal.fire('잘못된 입력', '0 이상의 숫자를 입력해주세요!', 'error')
-    return
-  }
-
+const submitPages = async (pageNum) => {
   try {
-    await axios.post('http://localhost:8000/api/v1/accounts/pages/set/', {
+    const res = await axios.post('http://localhost:8000/api/v1/kkubook/pages/set/', {
       pages: pageNum
     })
-    Swal.fire({
-  icon: 'success',
-  title: '기록 완료!',
-  text: `${pageNum}페이지까지 읽었어요!`,
-  customClass: {
-    popup: 'bg-white text-gray-900',
-    icon: 'text-green-500',
-    confirmButton: 'bg-yellow-400 text-white rounded px-4 py-2 mt-2 hover:bg-yellow-500'
-  }
-})
 
-    showModal.value = false
-    auth.fetchUserStatus() // 갱신
+    // ✅ 이미 기록된 경우 처리
+    if (res.data.already_recorded) {
+      Swal.fire({
+        icon: 'info',
+        title: '오늘은 이미 기록했어요!',
+        text: '내일 다시 기록해 주세요 🙂',
+        customClass: {
+          popup: 'bg-white text-gray-900',
+          icon: 'text-blue-400',
+          confirmButton: 'bg-gray-300 text-black rounded px-4 py-2 hover:bg-gray-400'
+        }
+      })
+      return
+    }
+
+    // ✅ 정상 기록 처리
+    Swal.fire({
+      icon: 'success',
+      title: '기록 완료!',
+      text: `${pageNum}페이지까지 읽었어요! (+15포인트 지급)`,
+      customClass: {
+        popup: 'bg-white text-gray-900',
+        icon: 'text-green-500',
+        confirmButton: 'bg-yellow-400 text-white rounded px-4 py-2 mt-2 hover:bg-yellow-500'
+      }
+    })
+
+    auth.fetchUserStatus()
+
   } catch (err) {
-    console.error(err)
     Swal.fire({
-  icon: 'error',
-  title: '잘못된 입력',
-  text: '0 이상의 숫자를 입력해주세요!',
-  customClass: {
-    popup: 'bg-white text-gray-900',
-    icon: 'text-red-500',
-    confirmButton: 'bg-red-400 text-white rounded px-4 py-2 mt-2 hover:bg-red-500'
-  }
-})
-
+      icon: 'error',
+      title: '기록 실패',
+      text: err.response?.data?.error || '문제가 발생했어요!',
+      customClass: {
+        popup: 'bg-white text-gray-900',
+        icon: 'text-red-500',
+        confirmButton: 'bg-red-400 text-white rounded px-4 py-2 mt-2 hover:bg-red-500'
+      }
+    })
   }
 }
 

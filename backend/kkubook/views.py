@@ -3,13 +3,21 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
 from django.shortcuts import get_object_or_404
+from django.utils import timezone
 from rest_framework.permissions import AllowAny
+from django.conf import settings
+from django.db import IntegrityError
 from django.contrib.auth import get_user_model
+from datetime import date
+from .models import ReadingRecord   
+import requests
+
+from .models import Bookworm, Pheed, Comment, Book, ReadingRecord, Question
+from .serializers import PheedSerializer, CommentSerializer
+
+
 
 User = get_user_model()
-
-from .models import Bookworm, Pheed, Comment
-from .serializers import PheedSerializer, CommentSerializer
 
 
 # 📌 [1] 책벌레 상태 조회
@@ -179,3 +187,143 @@ def user_pheeds_by_username(request, username):
     pheeds = Pheed.objects.filter(user=user).order_by('-created_at')
     serializer = PheedSerializer(pheeds, many=True, context={'request': request})
     return Response(serializer.data)
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def set_pages(request):
+    try:
+        pages = int(request.data.get('pages', 0))
+        if pages < 0:
+            raise ValueError("음수는 안됨")
+    except:
+        return Response({'error': '유효한 페이지 수를 입력하세요.'}, status=400)
+
+    # ✅ 아직 완독하지 않은 가장 최근 기록 하나 찾기
+    record = ReadingRecord.objects.filter(
+        user=request.user,
+        is_finished=False
+    ).order_by('-created_at').first()
+
+    if not record:
+        return Response({'error': '진행 중인 책이 없습니다.'}, status=400)
+
+    # ✅ 하루 한 번만 기록
+    if record.last_updated == timezone.now().date():
+        return Response({'already_recorded': True})
+
+    record.pages = pages
+    record.last_updated = timezone.now().date()
+    record.save()
+
+    # ✅ 포인트 지급 등 다른 로직 있으면 여기 추가
+
+    return Response({'message': '페이지 기록 완료', 'already_recorded': False})
+
+
+
+
+
+ALADIN_API_KEY = settings.ALADIN_API_KEY
+ALADIN_API_URL = 'https://www.aladin.co.kr/ttb/api/ItemSearch.aspx'
+
+# 📘 [1] 책 검색 (GET) 알라딘 API
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def search_books(request):
+    query = request.GET.get('q', '')
+    query_type = request.GET.get('type', 'Title')
+    if not query:
+        return Response({'error': '검색어(q)는 필수입니다.'}, status=400)
+
+    params = {
+        'ttbkey': ALADIN_API_KEY,
+        'Query': query,
+        'QueryType': query_type,
+        'MaxResults': 10,
+        'start': 1,
+        'SearchTarget': 'Book',
+        'output': 'js',
+        'Version': '20131101',
+        'Cover': 'Big',
+    }
+
+    try:
+        response = requests.get(ALADIN_API_URL, params=params)
+        response.raise_for_status()
+        items = response.json().get('item', [])
+    except Exception as e:
+        return Response({'error': '알라딘 API 요청 실패', 'detail': str(e)}, status=500)
+
+    # 필요한 필드만 추출
+    results = []
+    for item in items:
+        results.append({
+            'isbn': item.get('isbn13'),
+            'title': item.get('title'),
+            'author': item.get('author'),
+            'publisher': item.get('publisher'),
+            'cover_image': item.get('cover'),
+        })
+
+    return Response(results)
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def register_book(request):
+    user = request.user
+
+    # 이미 등록된 책이 있는지 확인
+    existing_record = ReadingRecord.objects.filter(
+        user=user,
+        created_at=timezone.now().date(),
+        is_finished=False
+    ).first()
+
+    if existing_record:
+        return Response({'error': '오늘은 이미 책을 등록했어요! 먼저 완독을 완료하세요!'}, status=400)
+
+    isbn = request.data.get('isbn')
+    title = request.data.get('title')
+    author = request.data.get('author')
+    publisher = request.data.get('publisher')
+    cover_image = request.data.get('cover_image')
+
+    if not all([isbn, title]):
+        return Response({'error': 'isbn과 title은 필수입니다.'}, status=400)
+
+    book, _ = Book.objects.get_or_create(
+        isbn=isbn,
+        defaults={
+            'title': title,
+            'author': author,
+            'publisher': publisher,
+            'cover_image': cover_image,
+        }
+    )
+
+    ReadingRecord.objects.create(
+        user=user,
+        book=book,
+        pages=0
+    )
+
+    return Response({
+        'message': '책 등록 및 읽기 시작 완료',
+        'book_id': book.id,
+        'title': book.title,
+        'start_page': 0,
+    }, status=201)
+
+
+# views.py
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def finish_current_book(request):
+    title = request.data.get('book_title')
+    record = request.user.readingrecord_set.filter(book__title=title, is_finished=False).first()
+
+    if record:
+        record.is_finished = True
+        record.save()
+        return Response({'message': '완독 처리 완료'})
+
+    return Response({'error': '기록을 찾을 수 없습니다.'}, status=404)

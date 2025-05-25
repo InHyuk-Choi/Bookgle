@@ -23,4 +23,9 @@ urlpatterns = [
     
     path('pheeds/me/', views.my_pheeds, name='my-pheeds'),  
     path('pheeds/user/<str:username>/', views.user_pheeds_by_username),
+    path('pages/set/', views.set_pages),
+    path('books/search/', views.search_books, name='search-books'),
+    path('books/register/', views.register_book, name='register-book'),
+
+    path('books/finish/', views.finish_current_book, name='finish-book'),
 ]

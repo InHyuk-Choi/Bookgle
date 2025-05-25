@@ -9,6 +9,8 @@ import FeedView from '@/views/FeedView.vue'
 import FeedWriteView from '@/views/FeedWriteView.vue'
 import RankingView from '@/views/RankingView.vue'
 import FollowListView from '@/views/FollowListView.vue'
+import BookSearchView from '@/views/BookSearchView.vue'
+
 
 const routes = [
   { path: '/', name: 'home', component: HomeView },
@@ -63,6 +65,13 @@ const routes = [
     }
   }
 },
+{ path: '/books/search', name: 'book-search', component: BookSearchView },
+{
+  path: '/quiz',
+  name: 'QuizView',
+  component: () => import('@/views/QuizView.vue'),
+},
+
 
 
 

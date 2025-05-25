@@ -1,5 +1,8 @@
 from django.db import models
 from django.contrib.auth import get_user_model
+from django.conf import settings
+from django.utils import timezone
+
 
 User = get_user_model()
 
@@ -53,3 +56,36 @@ class Comment(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+
+
+
+
+# 책 등록
+class Book(models.Model):
+    isbn = models.CharField(max_length=30, unique=True)
+    title = models.CharField(max_length=255)
+    author = models.CharField(max_length=100, blank=True, null=True)
+    publisher = models.CharField(max_length=100, blank=True, null=True)
+    cover_image = models.URLField(blank=True, null=True)
+    
+class ReadingRecord(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='readingrecord_set')
+    book = models.ForeignKey(Book, on_delete=models.CASCADE)
+    pages = models.PositiveIntegerField()
+    created_at = models.DateField(auto_now_add=True)
+    last_updated = models.DateField(null=True, blank=True) 
+    is_finished = models.BooleanField(default=False)
+
+    def is_today_recorded(self):
+        return self.last_updated == timezone.now().date()
+
+
+# GPT + Wikipedia 기반으로 생성된 문제
+class Question(models.Model):
+    book = models.ForeignKey(Book, on_delete=models.CASCADE, related_name="questions")
+    question = models.TextField()
+    choices = models.JSONField(default=list) # 객관식 문제
+    correct_answer = models.CharField(max_length=255)
+    # GPT가 생성한 문제인지 확인하기 위한 식별 필드 (나중에 GPT API로 문제 잘 생성되나 확인용)
+    gpt_generated = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)

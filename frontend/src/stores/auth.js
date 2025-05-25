@@ -16,7 +16,7 @@ export const useAuthStore = defineStore('auth', () => {
   const premiumFood = ref(0)
   const profileImage = ref('')
   const userId = ref(0)
-
+  const currentBookTitle = ref('')
   const bookworm = ref({
     name: '',
     level: 1,
@@ -104,6 +104,8 @@ export const useAuthStore = defineStore('auth', () => {
       premiumFood.value = res.data.premium_food
       profileImage.value = res.data.profile_image
       userId.value = res.data.id
+      currentBookTitle.value = res.data.current_book_title
+
 
     } catch (err) {
       console.error('유저 상태 조회 실패:', err)
@@ -150,6 +152,7 @@ export const useAuthStore = defineStore('auth', () => {
 
     username.value = ''
     password1.value = ''
+    password2.value = ''
     nickname.value = ''
 
     if (Swal && router) {
@@ -219,6 +222,6 @@ export const useAuthStore = defineStore('auth', () => {
     isLoggedIn, profileImage,followersCount,
   followingCount, userId, 
     login, signup, logout, fetchUserStatus, initAuth,
-    basicFood, premiumFood, bookworm, fetchBookwormStatus, feedBookworm, purchaseFood
+    basicFood, premiumFood, bookworm, fetchBookwormStatus, feedBookworm, purchaseFood, currentBookTitle
   }
 })

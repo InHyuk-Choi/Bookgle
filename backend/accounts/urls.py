@@ -1,6 +1,7 @@
 from django.urls import path, include
 from . import views
 from .views import bookworm_ranking
+from kkubook.views import set_pages
 
 urlpatterns = [
     # 인증
@@ -40,4 +41,6 @@ urlpatterns = [
 
 
     path('username/<str:username>/', views.user_profile_by_username),
+
+     path('pages/set/', set_pages),
 ]
