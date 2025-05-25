@@ -243,6 +243,7 @@ const submitPages = async (pageNum) => {
 
 onMounted(() => {
   auth.fetchUserStatus()
+  auth.fetchBookwormStatus()
 })
 
 </script>
