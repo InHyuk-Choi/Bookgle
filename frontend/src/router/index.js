@@ -10,7 +10,7 @@ import FeedWriteView from '@/views/FeedWriteView.vue'
 import RankingView from '@/views/RankingView.vue'
 import FollowListView from '@/views/FollowListView.vue'
 import BookSearchView from '@/views/BookSearchView.vue'
-
+import QuizView from '@/views/QuizView.vue'
 
 const routes = [
   { path: '/', name: 'home', component: HomeView },
@@ -41,6 +41,12 @@ const routes = [
 
 { path: '/feed/write', name: 'feed-write', component: FeedWriteView },
 {
+  path: '/feeds/:id/edit',
+  name: 'feed-edit',
+  component: () => import('@/views/FeedWriteView.vue')  // 파일명은 실제 컴포넌트명에 맞게
+},
+
+{
   path: '/feeds/:id',
   name: 'feed-detail',
   component: () => import('@/views/FeedDetailView.vue'),
@@ -68,9 +74,9 @@ const routes = [
 { path: '/books/search', name: 'book-search', component: BookSearchView },
 {
   path: '/quiz',
-  name: 'QuizView',
-  component: () => import('@/views/QuizView.vue'),
-},
+  name: 'quiz',
+  component: QuizView
+}
 
 
 

@@ -2,7 +2,9 @@
   <div class="pt-32 pb-20 px-4 bg-[#fffdf8] min-h-screen flex justify-center">
     <div class="bg-white w-full max-w-lg rounded-2xl shadow-xl p-6 space-y-6">
 
-      <h2 class="text-2xl font-bold text-center text-yellow-500">✍️ 피드 작성</h2>
+      <h2 class="text-2xl font-bold text-center text-yellow-500">
+        {{ isEdit ? '✏️ 피드 수정' : '✍️ 피드 작성' }}
+      </h2>
 
       <!-- 📘 텍스트 입력 -->
       <textarea
@@ -36,19 +38,24 @@
         @click="submitPheed"
         class="w-full bg-yellow-400 text-white font-bold py-3 rounded-lg hover:bg-yellow-500 transition text-lg"
       >
-        작성 완료
+        {{ isEdit ? '수정 완료' : '작성 완료' }}
       </button>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import axios from 'axios'
-import { useRouter } from 'vue-router'
 import Swal from 'sweetalert2'
 
+const route = useRoute()
 const router = useRouter()
+
+const isEdit = route.name === 'feed-edit'
+const feedId = route.params.id
+
 const content = ref('')
 const imageFile = ref(null)
 const previewImage = ref(null)
@@ -61,6 +68,22 @@ const onImageChange = (e) => {
   }
 }
 
+onMounted(async () => {
+  if (isEdit) {
+    try {
+      const res = await axios.get(`http://localhost:8000/api/v1/kkubook/pheeds/${feedId}/`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('access')}`
+        }
+      })
+      content.value = res.data.content
+      previewImage.value = res.data.image
+    } catch (err) {
+      console.error('❌ 기존 피드 불러오기 실패:', err)
+    }
+  }
+})
+
 const submitPheed = async () => {
   const formData = new FormData()
   formData.append('content', content.value)
@@ -68,8 +91,13 @@ const submitPheed = async () => {
     formData.append('image', imageFile.value)
   }
 
+  const url = isEdit
+    ? `http://localhost:8000/api/v1/kkubook/pheeds/${feedId}/`
+    : `http://localhost:8000/api/v1/kkubook/pheeds/`
+  const method = isEdit ? 'patch' : 'post'
+
   try {
-    await axios.post('http://localhost:8000/api/v1/kkubook/pheeds/', formData, {
+    await axios[method](url, formData, {
       headers: {
         Authorization: `Bearer ${localStorage.getItem('access')}`,
         'Content-Type': 'multipart/form-data',
@@ -78,28 +106,29 @@ const submitPheed = async () => {
 
     await Swal.fire({
       icon: 'success',
-      title: '피드 작성 완료!',
-      text: '게시글이 정상적으로 등록되었어요 ✨',
+      title: isEdit ? '피드 수정 완료!' : '피드 작성 완료!',
+      text: isEdit ? '게시글이 수정되었어요 ✨' : '게시글이 등록되었어요 ✨',
       customClass: {
         popup: 'bg-white text-gray-900',
         icon: 'text-green-500',
         confirmButton: 'bg-yellow-400 text-white font-bold rounded px-4 py-2 mt-2 hover:bg-yellow-500'
       }
     })
-    router.push({ name: 'feed' })
+
+    router.push({ name: 'profile' })
   } catch (err) {
-    console.error('❌ 피드 작성 실패:', err)
+    console.error('❌ 작성/수정 실패:', err)
 
     const errorData = err.response?.data
     const errorText = errorData
       ? Object.entries(errorData)
           .map(([field, messages]) => `${field}: ${messages.join(', ')}`)
           .join('\n')
-      : '작성 중 오류가 발생했어요 😢'
+      : '오류가 발생했어요 😢'
 
     await Swal.fire({
       icon: 'error',
-      title: '작성 실패',
+      title: '실패',
       text: errorText,
       customClass: {
         popup: 'bg-white text-gray-900',
@@ -109,5 +138,4 @@ const submitPheed = async () => {
     })
   }
 }
-
 </script>

@@ -28,4 +28,6 @@ urlpatterns = [
     path('books/register/', views.register_book, name='register-book'),
 
     path('books/finish/', views.finish_current_book, name='finish-book'),
+    path('questions/generate/', views.generate_quiz_view, name='generate-quiz'),
+    path('books/quiz-complete/', views.quiz_complete_view),
 ]

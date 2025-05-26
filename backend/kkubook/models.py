@@ -75,17 +75,18 @@ class ReadingRecord(models.Model):
     created_at = models.DateField(auto_now_add=True)
     last_updated = models.DateField(null=True, blank=True) 
     is_finished = models.BooleanField(default=False)
+    quiz_completed = models.BooleanField(default=False)
 
     def is_today_recorded(self):
         return self.last_updated == timezone.now().date()
 
 
-# GPT + Wikipedia 기반으로 생성된 문제
 class Question(models.Model):
-    book = models.ForeignKey(Book, on_delete=models.CASCADE, related_name="questions")
-    question = models.TextField()
-    choices = models.JSONField(default=list) # 객관식 문제
-    correct_answer = models.CharField(max_length=255)
-    # GPT가 생성한 문제인지 확인하기 위한 식별 필드 (나중에 GPT API로 문제 잘 생성되나 확인용)
-    gpt_generated = models.BooleanField(default=True)
+    book = models.ForeignKey(Book, on_delete=models.CASCADE)
+    question_text = models.TextField()
+    option1 = models.CharField(max_length=255)
+    option2 = models.CharField(max_length=255)
+    option3 = models.CharField(max_length=255)
+    option4 = models.CharField(max_length=255)
+    correct_option = models.IntegerField()  # 1~4
     created_at = models.DateTimeField(auto_now_add=True)
