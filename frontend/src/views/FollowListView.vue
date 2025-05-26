@@ -9,10 +9,11 @@
         class="flex items-center gap-4 p-4 bg-white shadow rounded-xl border"
       >
         <img
-          :src="user.profile_image ? `http://localhost:8000${user.profile_image}` : '/default-profile.png'"
-          alt="프로필 이미지"
-          class="w-12 h-12 rounded-full object-cover border"
-        />
+  :src="getProfileImage(user)"
+  @error="e => e.target.src = '/default-profile.png'"
+  alt="프로필 이미지"
+  class="w-12 h-12 rounded-full object-cover border"
+/>
         <p class="font-semibold text-gray-800">{{ user.nickname }}</p>
       </div>
     </div>
@@ -25,20 +26,32 @@ import { ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import axios from 'axios'
 
-const route = useRoute()
 const users = ref([])
-const title = route.meta.title || '팔로우 목록'
-const fetchUrl = route.meta.apiUrl
+const route = useRoute()
 
+const username = route.params.username
+const type = route.meta.type  // 'followers' or 'following'
+const title = route.meta.title
+
+const getProfileImage = (user) => {
+  const img = user.profile_image
+  console.log('🔥 유저 이미지:', user.profile_image)
+  if (!img || img === '') {
+    return '/default-profile.png'
+  }
+  return img.startsWith('http') ? img : `http://localhost:8000${img}`
+}
+const handleImageError = (e) => {
+  e.target.src = '/default-profile.png'
+}
 onMounted(async () => {
   try {
-    const res = await axios.get(fetchUrl)
+    const res = await axios.get(
+      `http://localhost:8000/api/v1/accounts/${type}/username/${username}/`
+    )
     users.value = res.data
   } catch (err) {
     console.error('유저 목록 가져오기 실패:', err)
   }
 })
 </script>
-
-<style scoped>
-</style>

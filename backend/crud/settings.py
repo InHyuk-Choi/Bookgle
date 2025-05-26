@@ -11,8 +11,14 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
 from pathlib import Path
+from decouple import config
 
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
+# API KEYs
+ALADIN_API_KEY = config('ALADIN_API_KEY')
+GEMINI_API_KEY = config('GEMINI_API_KEY')
+NAVER_CLIENT_ID = config('NAVER_CLIENT_ID')
+NAVER_CLIENT_SECRET = config('NAVER_CLIENT_SECRET')
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
@@ -106,13 +112,13 @@ MIDDLEWARE = [
     'allauth.account.middleware.AccountMiddleware',
 ]
 
-CORS_ALLOW_CREDENTIALS = True
 
 CORS_ALLOWED_ORIGINS = [
     "http://127.0.0.1:5173",
     "http://localhost:5173",
 ]
 
+CORS_ALLOW_CREDENTIALS = True
 
 ROOT_URLCONF = 'crud.urls'
 

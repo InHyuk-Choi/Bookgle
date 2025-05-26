@@ -1,5 +1,7 @@
 from django.urls import path, include
 from . import views
+from .views import bookworm_ranking
+from kkubook.views import set_pages
 
 urlpatterns = [
     # 인증
@@ -26,10 +28,19 @@ urlpatterns = [
 
     # 팔로우
     path('follow/<int:user_id>/', views.toggle_follow, name='toggle_follow'),
-    path('followings/<int:user_id>/', views.following_list, name='following_list'),
-    path('followers/<int:user_id>/', views.follower_list, name='follower_list'),
+
+    path('followers/username/<str:username>/', views.user_followers),
+    path('following/username/<str:username>/', views.user_following),
+
     path('is-following/<int:user_id>/', views.is_following, name='is_following'),
 
     path('profile/upload/', views.upload_profile_image, name='upload-profile-image'),
+    
+    
+    path('ranking/', bookworm_ranking),
 
+
+    path('username/<str:username>/', views.user_profile_by_username),
+
+     path('pages/set/', set_pages),
 ]

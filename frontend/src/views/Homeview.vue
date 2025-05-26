@@ -2,10 +2,20 @@
   <div class="relative h-screen overflow-hidden bg-[#fffdf8]">
 
     <!-- 🧷 상단 고정된 아이콘 바 -->
-    <div class="fixed top-0 w-full flex justify-between items-center px-6 py-2 z-50 bg-[#fffdf8]">
-      <img src="/bookcase.png" class="w-10 h-10 object-contain hover:scale-110 transition-transform mt-[-4px]" />
+<div class="fixed top-0 w-full grid grid-cols-3 items-center px-6 py-2 z-50 bg-[#fffdf8]">
+    <div class="flex justify-start">
+      <img
+        src="/bookcase.png"
+        class="w-10 h-10 object-contain hover:scale-110 transition-transform mt-[-4px] cursor-pointer"
+        @click="router.push({ name: 'RecommendedBooks' })"
+      />
+      </div>
+      <div class="flex justify-center">
       <img src="/favicon.png" alt="logo" class="w-28 h-20 object-contain" />
+      </div>
+      <div class="flex justify-end gap-6 items-center">
       <div class="flex gap-6 items-center">
+        </div>
           <div>
     <!-- 📦 보관함 버튼 -->
     <img
@@ -14,7 +24,7 @@
       class="w-10 h-10 object-contain cursor-pointer hover:scale-110 transition-transform"
       @click="openInventory"
     />
-
+            
     <!-- 📦 보관함 사이드바 -->
     <InventorySidebar
   :isOpen="showInventory"
@@ -37,19 +47,23 @@
     </main>
     
     <!-- 🔒 하단 고정 바텀 네브바 -->
-    <BottomNavbar />
+
   </div>
+
 </template>
 
 <script setup>
 import PetStatus from '@/components/PetStatus.vue'
 import LevelInfo from '@/components/LevelInfo.vue'
-import BottomNavbar from '@/components/BottomNavbar.vue'
+
 import { useRouter } from 'vue-router'
 import { ref } from 'vue'
 import InventorySidebar from '@/components/InventorySidebar.vue'
 import { useAuthStore } from '@/stores/auth'
 
+
+
+const auth = useAuthStore()
 
 const router = useRouter()
 const showInventory = ref(false)
@@ -57,7 +71,5 @@ const openInventory = () => {
   showInventory.value = true
 }
 
-
-const auth = useAuthStore()
 
 </script>

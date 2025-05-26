@@ -1,12 +1,16 @@
 import { createRouter, createWebHistory } from 'vue-router'
 
-import HomeView from '@/views/Homeview.vue'
+import HomeView from '@/views/HomeView.vue'
 import SignInView from '@/views/SignInView.vue'
 import SignUpView from '@/views/SignUpView.vue'
 import ProfileView from '@/views/ProfileView.vue'
 import StoreView from '@/views/StoreView.vue'
 import FeedView from '@/views/FeedView.vue'
 import FeedWriteView from '@/views/FeedWriteView.vue'
+import RankingView from '@/views/RankingView.vue'
+import FollowListView from '@/views/FollowListView.vue'
+import BookSearchView from '@/views/BookSearchView.vue'
+import QuizView from '@/views/QuizView.vue'
 
 const routes = [
   { path: '/', name: 'home', component: HomeView },
@@ -14,38 +18,77 @@ const routes = [
   { path: '/signup', name: 'signup', component: SignUpView },
   { path: '/profile', name: 'profile', component: ProfileView },
   { path: '/store', name: 'store', component: StoreView },
-  {
-  path: '/profile/upload',
-  name: 'profile-upload',
-  component: () => import('@/views/ProfileImageUpload.vue'),
-},
+  
 {
-  path: '/profile/following',
-  name: 'following-list',
-  component: () => import('@/views/FollowListView.vue'),
+  path: '/followers/:username',
+  name: 'followers',
+  component: FollowListView,
   meta: {
-    title: '팔로잉 목록',
-    apiUrl: 'http://localhost:8000/api/v1/accounts/following/<user_id>/', // 이 부분 실제 user_id로 교체 필요
+    type: 'followers',
+    title: '팔로워 목록'
   }
 },
 {
-  path: '/profile/followers',
-  name: 'follower-list',
-  component: () => import('@/views/FollowListView.vue'),
+  path: '/following/:username',
+  name: 'following',
+  component: FollowListView,
   meta: {
-    title: '팔로워 목록',
-    apiUrl: 'http://localhost:8000/api/v1/accounts/followers/<user_id>/', // 이 부분 실제 user_id로 교체 필요
+    type: 'following',
+    title: '팔로잉 목록'
   }
 },
 { path: '/feed', name: 'feed', component: FeedView },
 
 { path: '/feed/write', name: 'feed-write', component: FeedWriteView },
 {
+  path: '/feeds/:id/edit',
+  name: 'feed-edit',
+  component: () => import('@/views/FeedWriteView.vue')  // 파일명은 실제 컴포넌트명에 맞게
+},
+
+{
   path: '/feeds/:id',
   name: 'feed-detail',
   component: () => import('@/views/FeedDetailView.vue'),
   props: true,
 },
+  {
+    path: '/ranking',
+    name: 'ranking',
+    component: RankingView,
+  },
+ {
+  path: '/user/:username',
+  name: 'UserProfile',
+  component: () => import('@/views/OthersProfileView.vue'),
+  props: true,
+  beforeEnter: (to, from, next) => {
+    const currentUsername = localStorage.getItem('currentUsername')
+    if (to.params.username === currentUsername) {
+      next({ name: 'profile' })
+    } else {
+      next()
+    }
+  }
+},
+{ path: '/books/search', name: 'book-search', component: BookSearchView },
+{
+  path: '/quiz',
+  name: 'quiz',
+  component: QuizView
+},
+{
+  path: '/recommendations',
+  name: 'RecommendedBooks',
+  component: () => import('@/views/RecommendedBooksView.vue')
+},
+{
+  path: '/book/:isbn',
+  name: 'BookDetail',
+  component: () => import('@/views/BookDetailView.vue'),
+  props: true
+}
+
 
 
 ]

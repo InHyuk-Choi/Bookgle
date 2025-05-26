@@ -16,6 +16,7 @@ export const useAuthStore = defineStore('auth', () => {
   const premiumFood = ref(0)
   const profileImage = ref('')
   const userId = ref(0)
+  const currentBookTitle = ref('')
   const bookworm = ref({
     name: '',
     level: 1,
@@ -45,6 +46,7 @@ export const useAuthStore = defineStore('auth', () => {
       bookworm.value.progress = Math.round(res.data.experience / res.data.exp_to_next * 1000) / 1000
       basicFood.value = res.data.basic_food
       premiumFood.value = res.data.premium_food
+      profileImage.value = res.data.profile_image 
 
     } catch (err) {
       console.error('먹이 주기 실패:', err)
@@ -91,6 +93,8 @@ export const useAuthStore = defineStore('auth', () => {
       const res = await axios.get('http://localhost:8000/api/v1/accounts/me/', {
         withCredentials: true
       })
+      username.value = res.data.username
+      localStorage.setItem('currentUsername', res.data.username)
       totalPoints.value = res.data.total_points
       nickname.value = res.data.nickname 
       readPages.value = res.data.read_pages
@@ -100,6 +104,8 @@ export const useAuthStore = defineStore('auth', () => {
       premiumFood.value = res.data.premium_food
       profileImage.value = res.data.profile_image
       userId.value = res.data.id
+      currentBookTitle.value = res.data.current_book_title
+
 
     } catch (err) {
       console.error('유저 상태 조회 실패:', err)
@@ -146,6 +152,7 @@ export const useAuthStore = defineStore('auth', () => {
 
     username.value = ''
     password1.value = ''
+    password2.value = ''
     nickname.value = ''
 
     if (Swal && router) {
@@ -215,6 +222,6 @@ export const useAuthStore = defineStore('auth', () => {
     isLoggedIn, profileImage,followersCount,
   followingCount, userId, 
     login, signup, logout, fetchUserStatus, initAuth,
-    basicFood, premiumFood, bookworm, fetchBookwormStatus, feedBookworm, purchaseFood
+    basicFood, premiumFood, bookworm, fetchBookwormStatus, feedBookworm, purchaseFood, currentBookTitle
   }
 })

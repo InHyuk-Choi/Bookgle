@@ -2,11 +2,24 @@
   <div class="bg-[#fffdf8] min-h-screen px-4 pt-36 pb-10">
     <!-- 📌 상단 프로필 -->
     <div class="flex flex-col items-center gap-3 mb-8">
-      <img
-        :src="profileImage"
-        alt="프로필 이미지"
-        class="w-28 h-28 rounded-full object-cover border-4 border-yellow-300"
-      />
+      <input
+  id="profile-upload"
+  type="file"
+  accept="image/*"
+  @change="handleProfileChange"
+  class="hidden"
+/>
+
+<label for="profile-upload">
+ <img
+  :src="profileImage"
+  @error="handleImageError"
+  alt="프로필 이미지"
+  class="w-28 h-28 rounded-full object-cover border-4 border-yellow-300 cursor-pointer hover:opacity-80 transition"
+  title="클릭하여 프로필 사진 변경"
+/>
+
+</label>
       <h2 class="text-2xl font-bold">{{ nickname }}</h2>
       <div class="flex gap-6 text-sm text-gray-700">
         <p><strong>{{ totalPoints }}</strong> 포인트</p>
@@ -74,12 +87,21 @@ const totalPoints = computed(() => auth.totalPoints)
 const readPages = computed(() => auth.readPages)
 const followingCount = computed(() => auth.followingCount)
 const followersCount = computed(() => auth.followersCount)
-const profileImage = computed(() =>
-  auth.profileImage ? `http://localhost:8000${auth.profileImage}` : '/default-profile.png'
-)
+const profileImage = computed(() => {
+  const img = auth.profileImage
+  if (!img || img === '') {
+    return '/default-profile.png'
+  }
+  if (img.startsWith('http')) {
+    return img
+  }
+  return `http://localhost:8000${img}`
+})
+
 
 const myFeeds = ref([])
 const scrollObserver = ref(null)
+const username = computed(() => auth.username)
 
 const fetchMyFeeds = async () => {
   try {
@@ -94,12 +116,50 @@ const fetchMyFeeds = async () => {
   }
 }
 
+const handleProfileChange = async (e) => {
+  const file = e.target.files[0]
+  if (!file) return
+
+  const formData = new FormData()
+  formData.append('profile_image', file)
+
+  try {
+    const res = await axios.post('http://localhost:8000/api/v1/accounts/profile/upload/', formData, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('access')}`,
+        'Content-Type': 'multipart/form-data',
+      }
+    })
+
+    auth.profileImage = res.data.profile_image
+
+    await Swal.fire({
+      icon: 'success',
+      title: '프로필 사진이 변경되었습니다!',
+      customClass: {
+        popup: 'bg-white text-gray-900',
+        icon: 'text-green-500',
+        confirmButton: 'bg-yellow-400 text-white font-bold rounded px-4 py-2 mt-2 hover:bg-yellow-500'
+      }
+    })
+  } catch (err) {
+    console.error('프로필 업로드 실패:', err)
+    Swal.fire('실패!', '사진 변경 중 오류가 발생했습니다.', 'error')
+  }
+}
+
+const goToFollowers = () => {
+  router.push({
+    name: 'followers',
+    params: { username: username.value }  // ✅ 진짜 username!
+  })
+}
 
 const goToFollowing = () => {
-  router.push({ name: 'following-list', params: { userId: auth.userId } })
-}
-const goToFollowers = () => {
-  router.push({ name: 'follower-list', params: { userId: auth.userId } })
+  router.push({
+    name: 'following',
+    params: { username: username.value }  // ✅ 이것도!
+  })
 }
 
 const logout = () => {
@@ -108,6 +168,9 @@ const logout = () => {
 
 onMounted(() => {
   fetchMyFeeds()
+  console.log('[내 프로필] auth.profileImage:', auth.profileImage)
+
+
 })
 </script>
 
