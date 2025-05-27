@@ -5,9 +5,6 @@ const auth = useAuthStore()
 
 <template>
   <div class="text-center mt-2">
-    <p class="text-sm text-gray-600">
-      현재 단계: <strong>책벌레</strong> <!-- 추후 캐릭터명도 바꾸면 됨 -->
-    </p>
 
     <p class="text-lg font-semibold">Level {{ auth.bookworm.level }}</p>
 

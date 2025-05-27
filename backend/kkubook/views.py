@@ -90,7 +90,6 @@ def list_create_pheeds(request):
         serializer = PheedSerializer(data=request.data, context={'request': request})
         if serializer.is_valid():
             pheed = serializer.save(user=request.user)
-            request.user.total_points += 10
             request.user.save()
             return Response(PheedSerializer(pheed, context={'request': request}).data, status=201)
         return Response(serializer.errors, status=400)
@@ -173,7 +172,6 @@ def list_create_comments(request, pheed_id):
         serializer = CommentSerializer(data=request.data, context={'request': request})
         if serializer.is_valid():
             comment = serializer.save(user=request.user, pheed=pheed)
-            request.user.total_points += 3
             request.user.save()
             return Response(CommentSerializer(comment, context={'request': request}).data, status=201)
         return Response(serializer.errors, status=400)
@@ -218,6 +216,11 @@ def set_pages(request):
     record.pages = pages
     record.last_updated = timezone.now().date()
     record.save()
+
+    # ✅ 포인트 지급
+    user = request.user
+    user.total_points += 15
+    user.save()
 
     return Response({'message': '페이지 기록 완료', 'already_recorded': False})
 

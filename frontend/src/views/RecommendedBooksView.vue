@@ -1,5 +1,6 @@
 <template>
-  <div class="px-4 py-10 max-w-6xl mx-auto bg-[#fffdf8] min-h-screen">
+<div class="px-4 pt-32 pb-10 max-w-6xl mx-auto bg-[#fffdf8] min-h-screen">
+
     <!-- 제목 -->
     <h2 class="text-3xl font-extrabold text-center text-yellow-500 tracking-wide mb-8 mt-4 drop-shadow-sm font-[Pretendard]">
       오늘의 추천 도서

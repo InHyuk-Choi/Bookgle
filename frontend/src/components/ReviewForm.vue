@@ -41,10 +41,18 @@ const emit = defineEmits(['refresh'])
 
 const content = ref('')
 const rating = ref('')
-
 const submitReview = async () => {
   if (!content.value.trim() || !rating.value) {
-    return Swal.fire('입력 오류', '내용과 별점을 모두 입력해주세요', 'warning')
+    return Swal.fire({
+      icon: 'warning',
+      title: '입력 오류',
+      text: '내용과 별점을 모두 입력해주세요',
+      confirmButtonText: '확인',
+      customClass: {
+        confirmButton: 'bg-yellow-400 hover:bg-yellow-500 text-white font-bold py-2 px-4 rounded text-sm inline-block text-center',
+      },
+      buttonsStyling: false,
+    })
   }
 
   try {
