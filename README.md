@@ -178,4 +178,4 @@
 
 이 프로젝트는 실제 서비스를 고려한 기능 설계, UI 구현, AI 연동까지 폭넓게 다룬 팀 프로젝트입니다.  
 프로젝트 진행과정은 Jira에서 확인해주세요.
-Jira URL: [https://cjn112070.atlassian.net/jira/software/projects/SCRUM/boards/1/timeline](https://cjn112070.atlassian.net/jira/software/projects/SCRUM/boards/1/timeline?atlOrigin=eyJpIjoiMmJlOTc2OTEyMjc0NGNhMmJhMjU3ZDZiYWQyMjhhNWQiLCJwIjoiaiJ9)
+[https://cjn112070.atlassian.net/jira/software/projects/SCRUM/boards/1/timeline](https://cjn112070.atlassian.net/jira/software/projects/SCRUM/boards/1/timeline?atlOrigin=eyJpIjoiMmJlOTc2OTEyMjc0NGNhMmJhMjU3ZDZiYWQyMjhhNWQiLCJwIjoiaiJ9)
