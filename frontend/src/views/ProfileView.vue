@@ -168,6 +168,7 @@ const logout = () => {
 
 onMounted(() => {
   fetchMyFeeds()
+  auth.fetchUserStatus()
   console.log('[내 프로필] auth.profileImage:', auth.profileImage)
 
 
