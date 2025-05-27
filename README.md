@@ -68,7 +68,7 @@
 
 ### 4. 🧠 AI 기반 퀴즈 생성기
 - 책 완독 시 퀴즈 생성 버튼 활성화
-- Google Books / 위키피디아 기반 줄거리 요약 확보
+- **Google Gemini API** 기반 줄거리 요약 확보
 - **Google Gemini API**에 요약 전달 → 객관식 퀴즈 3~5개 생성
 - 퀴즈는 DB에 저장되며, 재시도 시 캐시 사용
 - 해당 로직은 `generate_questions_for_book()` 함수에서 일괄 처리
