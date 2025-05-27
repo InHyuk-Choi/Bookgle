@@ -124,16 +124,19 @@
 ## 📊 ERD 및 컴포넌트 구조
 
 - **ERD 다이어그램**  
-  ![ERD](./프로젝트 명세서/erd.png)
+  
+![erd](https://github.com/user-attachments/assets/5dbb6618-08f1-4eed-a7c8-0bb591b1938f)
 
 - **Vue 컴포넌트 구조도**  
   ![컴포넌트](./프로젝트 명세서/vue_components.png)
+![vue_components](https://github.com/user-attachments/assets/cb0f677c-633d-40c5-b21c-809ea56c86ff)
 
 ---
 
 ## 🔍 API 명세
 
-- 👉 [API 명세서 (PDF)](./프로젝트 명세서/API 명세서.pdf)
+- **API 명세서**
+[API 명세서.pdf](https://github.com/user-attachments/files/20453544/API.pdf)
 
 ---
 
