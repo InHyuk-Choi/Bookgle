@@ -128,14 +128,12 @@
 ![erd](https://github.com/user-attachments/assets/5dbb6618-08f1-4eed-a7c8-0bb591b1938f)
 
 - **Vue 컴포넌트 구조도**  
-  ![컴포넌트](./프로젝트 명세서/vue_components.png)
 ![vue_components](https://github.com/user-attachments/assets/cb0f677c-633d-40c5-b21c-809ea56c86ff)
 
 ---
 
 ## 🔍 API 명세
 
-- **API 명세서**
 [API 명세서.pdf](https://github.com/user-attachments/files/20453544/API.pdf)
 
 ---
@@ -180,4 +178,4 @@
 
 이 프로젝트는 실제 서비스를 고려한 기능 설계, UI 구현, AI 연동까지 폭넓게 다룬 팀 프로젝트입니다.  
 프로젝트 진행과정은 Jira에서 확인해주세요.
-Jira URL: 
+Jira URL: [https://cjn112070.atlassian.net/jira/software/projects/SCRUM/boards/1/timeline](https://cjn112070.atlassian.net/jira/software/projects/SCRUM/boards/1/timeline?atlOrigin=eyJpIjoiMmJlOTc2OTEyMjc0NGNhMmJhMjU3ZDZiYWQyMjhhNWQiLCJwIjoiaiJ9)
